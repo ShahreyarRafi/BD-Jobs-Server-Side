@@ -26,8 +26,8 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
 
-    const jobsCollection = client.db('BDJobsDB').collection('jobsCollection');
 
+    const jobsCollection = client.db('BDJobsDB').collection('jobsCollection');
 
     // for Jobs
 
@@ -54,6 +54,13 @@ async function run() {
       const newJob = req.body;
       console.log(newJob);
       const result = await jobsCollection.insertOne(newJob);
+      res.send(result);
+    })
+
+    app.delete('/my-jobs/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await jobsCollection.deleteOne(query);
       res.send(result);
     })
 
