@@ -26,7 +26,9 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
 
+
     const jobsCollection = client.db('BDJobsDB').collection('jobsCollection');
+
 
     // for Jobs
 
@@ -42,6 +44,15 @@ async function run() {
       const result = await jobsCollection.findOne(query);
       res.send(result);
     })
+
+    app.post('/jobs', async (req, res) => {
+      const newJob = req.body;
+      console.log(newJob);
+      const result = await jobsCollection.insertOne(newJob);
+      res.send(result);
+    })
+
+
 
 
     // Send a ping to confirm a successful connection
