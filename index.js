@@ -57,12 +57,47 @@ async function run() {
       res.send(result);
     })
 
+  
     app.delete('/my-jobs/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await jobsCollection.deleteOne(query);
       res.send(result);
     })
+
+    app.put('/jobs/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updatedJob = req.body;
+
+      const job = {
+        $set: {
+          banner_image: updatedJob.banner_image,
+          company_logo: updatedJob.company_logo,
+          company_name: updatedJob.company_name,
+          posted_by: updatedJob.posted_by,
+          posted_by_email: updatedJob.posted_by_email,
+          job_title: updatedJob.job_title,
+          job_category: updatedJob.job_category,
+          job_type: updatedJob.job_type,
+          job_location: updatedJob.job_location,
+          salary_range: updatedJob.salary_range,
+          job_description: updatedJob.job_description,
+          job_posting_date: updatedJob.job_posting_date,
+          application_deadline: updatedJob.application_deadline,
+          applicants_number: updatedJob.applicants_number
+        }
+      }
+      console.log(job);
+
+      const result = await jobsCollection.updateOne(filter, job, options);
+
+      res.send(result);
+    })
+
+    
+
 
 
     // Send a ping to confirm a successful connection
