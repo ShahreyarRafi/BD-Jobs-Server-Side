@@ -29,6 +29,20 @@ async function run() {
 
     const jobsCollection = client.db('BDJobsDB').collection('jobsCollection');
 
+    const appliedJobsCollection = client.db('BDJobsDB').collection('appliedJobs')
+
+    // for cart
+
+
+    app.post('/applied-jobs', async (req, res) => {
+      const appliedJob = req.body;
+      console.log(appliedJob);
+      const result = await appliedJobsCollection.insertOne(appliedJob);
+      console.log(result);
+      res.send(result);
+    })
+
+
     // for Jobs
 
     app.get('/jobs', async (req, res) => {
