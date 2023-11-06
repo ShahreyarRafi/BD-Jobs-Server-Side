@@ -26,10 +26,7 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
 
-
     const jobsCollection = client.db('BDJobsDB').collection('jobsCollection');
-
-
 
     // for Jobs
 
@@ -39,6 +36,12 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/jobs/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
