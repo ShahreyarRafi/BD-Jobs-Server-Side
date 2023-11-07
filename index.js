@@ -33,6 +33,11 @@ async function run() {
 
     // for cart
 
+    app.get('/applied-jobs', async (req, res) => {
+      const cursor = appliedJobsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
 
     app.post('/applied-jobs', async (req, res) => {
       const appliedJob = req.body;
