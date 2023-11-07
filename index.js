@@ -33,11 +33,28 @@ async function run() {
 
     // for job application
 
+    // app.get('/applied-jobs', async (req, res) => {
+    //   console.log(req.query);
+    //   let query = {};
+    //   if (req.query?.email) {
+    //     query = { applicant_email: req.query.email }; // Use the correct field name 'applicant_email'
+    //   }
+    //   const cursor = appliedJobsCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
     app.get('/applied-jobs', async (req, res) => {
-      const cursor = appliedJobsCollection.find();
+      console.log(req.query);
+      let query = {};
+      if (req.query?.uid) {
+        query = { user_id: req.query.uid }; // Use the correct field name 'applicant_email'
+      }
+      const cursor = appliedJobsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
-    })
+    });
+
 
     app.post('/applied-jobs', async (req, res) => {
       const appliedJob = req.body;
@@ -47,7 +64,7 @@ async function run() {
       res.send(result);
     })
 
-
+ 
     // for Jobs
 
     app.get('/jobs', async (req, res) => {
