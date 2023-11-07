@@ -31,7 +31,7 @@ async function run() {
 
     const appliedJobsCollection = client.db('BDJobsDB').collection('appliedJobs')
 
-    // for cart
+    // for job application
 
     app.get('/applied-jobs', async (req, res) => {
       const cursor = appliedJobsCollection.find();
@@ -64,7 +64,7 @@ async function run() {
     })
 
     app.get('/my-jobs/:email', async (req, res) => {
-      const query = { posted_by_email: req.params.email }; 
+      const query = { posted_by_email: req.params.email };
       const results = await jobsCollection.find(query).toArray();
       res.send(results);
     });
@@ -76,7 +76,7 @@ async function run() {
       res.send(result);
     })
 
-  
+
     app.delete('/my-jobs/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
@@ -115,8 +115,14 @@ async function run() {
       res.send(result);
     })
 
-    
-
+    app.put('/job/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const update = { $inc: { applicants_number: 1 } }
+      const result = await jobsCollection.updateOne(filter, update);
+      console.log(result);
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
