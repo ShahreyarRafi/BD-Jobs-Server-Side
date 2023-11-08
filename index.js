@@ -9,6 +9,8 @@ const port = process.env.PORT || 5000;
 
 //middleware
 
+app.use(cors({ origin: '*' }));
+
 // const logger = async( req, res, next ) =>{
 //   console.log('called:', req.hostname, req.originalUrl);
 //   next()
@@ -36,22 +38,25 @@ const port = process.env.PORT || 5000;
 
 // }
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true, // Allow credentials (cookies) to be sent
-}));
 
-app.use(cookieParser())
-app.use(express.json());
-app.options('*', cors());
+
+
+// app.use(cors({
+//   origin: 'http://localhost:5173',
+//   credentials: true, // Allow credentials (cookies) to be sent
+// }));
+
+// app.use(cookieParser())
+// app.use(express.json());
+// app.options('*', cors());
 
 // Enable CORS for all routes
-app.use(
-  cors({
-    origin: 'http://localhost:5173', // Specify the allowed origin(s)
-    methods: ['GET', 'POST'], // Specify the allowed HTTP methods
-  })
-);
+// app.use(
+//   cors({
+//     origin: 'http://localhost:5173', // Specify the allowed origin(s)
+//     methods: ['GET', 'POST'], // Specify the allowed HTTP methods
+//   })
+// );
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.n8c8sym.mongodb.net/?retryWrites=true&w=majority`;
@@ -109,7 +114,7 @@ async function run() {
     // });
     
     app.get('/applied-jobs', async (req, res) => {
-      console.log(req.query);
+      // console.log(req.query);
       let query = {};
       if (req.query?.user_id) {
         query = { uid: req.query.user_id }; // Use the correct field name 'applicant_email'
@@ -141,9 +146,9 @@ async function run() {
 
     app.post('/applied-jobs', async (req, res) => {
       const appliedJob = req.body;
-      console.log(appliedJob);
+      // console.log(appliedJob);
       const result = await appliedJobsCollection.insertOne(appliedJob);
-      console.log(result);
+      // console.log(result);
       res.send(result);
     })
 
@@ -188,7 +193,7 @@ async function run() {
 
     app.post('/jobs', async (req, res) => {
       const newJob = req.body;
-      console.log(newJob);
+      // console.log(newJob);
       const result = await jobsCollection.insertOne(newJob);
       res.send(result);
     })
