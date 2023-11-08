@@ -9,32 +9,32 @@ const port = process.env.PORT || 5000;
 
 //middleware
 
-const logger = async( req, res, next ) =>{
-  console.log('called:', req.hostname, req.originalUrl);
-  next()
-}
+// const logger = async( req, res, next ) =>{
+//   console.log('called:', req.hostname, req.originalUrl);
+//   next()
+// }
 
-const verifyToken = async(req, res, next) =>{
-  const token = req.cookies?.token;
-  console.log('value of token in middle ware', token);
-  if(!token){
-    return res.status(401).send({message: 'Not authorized'})
-  }
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
-    // Err
-    if(err){
-      console.log(err);
-      return res.status(401).send({message: 'unauthorized'})
-    }
+// const verifyToken = async(req, res, next) =>{
+//   const token = req.cookies?.token;
+//   console.log('value of token in middle ware', token);
+//   if(!token){
+//     return res.status(401).send({message: 'Not authorized'})
+//   }
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
+//     // Err
+//     if(err){
+//       console.log(err);
+//       return res.status(401).send({message: 'unauthorized'})
+//     }
 
-    //Valid
-    console.log('value in the decoded:', decoded);
-    req.user = decoded;
-    next()
+//     //Valid
+//     console.log('value in the decoded:', decoded);
+//     req.user = decoded;
+//     next()
 
-  })
+//   })
 
-}
+// }
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -78,18 +78,18 @@ async function run() {
 
 
 
-    // for auth
-    app.post('/jwt', logger, async (req, res) => {
-      const user = req.body;
-      console.log(user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-      res
-        .cookie('token', token, {
-          httpOnly: true,
-          secure: false,
-        })
-        .send({ success: true });
-    });
+    // // for auth
+    // app.post('/jwt', logger, async (req, res) => {
+    //   const user = req.body;
+    //   console.log(user);
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+    //   res
+    //     .cookie('token', token, {
+    //       httpOnly: true,
+    //       secure: false,
+    //     })
+    //     .send({ success: true });
+    // });
 
 
 
@@ -107,25 +107,36 @@ async function run() {
     //   const result = await cursor.toArray();
     //   res.send(result);
     // });
-
-    app.get('/applied-jobs', logger, verifyToken, async (req, res) => {
+    
+    app.get('/applied-jobs', async (req, res) => {
       console.log(req.query);
-      // console.log("tok tok token", req.cookies.token);
-      console.log('user in the valid token', req.user);
-      // console.log('akam', req.query.uid);
-      // console.log('akam222', req.user.email);
-      // if(req.query.uid !== req.user.email){
-      //   return res.status(403).send({message: 'forbidden access'})
-      // }
-
       let query = {};
-      if (req.query?.email) {
-        query = { applicant_email: req.query.email }; // Use the correct field name 'applicant_email'
+      if (req.query?.user_id) {
+        query = { uid: req.query.user_id }; // Use the correct field name 'applicant_email'
       }
       const cursor = appliedJobsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // app.get('/applied-jobs', async (req, res) => {
+    //   console.log(req.query);
+    //   // console.log("tok tok token", req.cookies.token);
+    //   console.log('user in the valid token', req.user);
+    //   // console.log('akam', req.query.uid);
+    //   // console.log('akam222', req.user.email);
+    //   // if(req.query.uid !== req.user.email){
+    //   //   return res.status(403).send({message: 'forbidden access'})
+    //   // }
+
+    //   let query = {};
+    //   if (req.query?.uid) {
+    //     query = { uid: req.query.uid }; // Use the correct field name 'applicant_email'
+    //   }
+    //   const cursor = appliedJobsCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
 
 
     app.post('/applied-jobs', async (req, res) => {
