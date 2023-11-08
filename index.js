@@ -1,13 +1,58 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser =require('cookie-parser')
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-app.use(cors());
+
+const logger = async( req, res, next ) =>{
+  console.log('called:', req.hostname, req.originalUrl);
+  next()
+}
+
+const verifyToken = async(req, res, next) =>{
+  const token = req.cookies?.token;
+  console.log('value of token in middle ware', token);
+  if(!token){
+    return res.status(401).send({message: 'Not authorized'})
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
+    // Err
+    if(err){
+      console.log(err);
+      return res.status(401).send({message: 'unauthorized'})
+    }
+
+    //Valid
+    console.log('value in the decoded:', decoded);
+    req.user = decoded;
+    next()
+
+  })
+
+}
+
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true, // Allow credentials (cookies) to be sent
+}));
+
+app.use(cookieParser())
 app.use(express.json());
+app.options('*', cors());
+
+// Enable CORS for all routes
+app.use(
+  cors({
+    origin: 'http://localhost:5173', // Specify the allowed origin(s)
+    methods: ['GET', 'POST'], // Specify the allowed HTTP methods
+  })
+);
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.n8c8sym.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -31,6 +76,25 @@ async function run() {
 
     const appliedJobsCollection = client.db('BDJobsDB').collection('appliedJobs')
 
+
+
+    // for auth
+    app.post('/jwt', logger, async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: false,
+        })
+        .send({ success: true });
+    });
+
+
+
+
+
     // for job application
 
     // app.get('/applied-jobs', async (req, res) => {
@@ -44,11 +108,19 @@ async function run() {
     //   res.send(result);
     // });
 
-    app.get('/applied-jobs', async (req, res) => {
+    app.get('/applied-jobs', logger, verifyToken, async (req, res) => {
       console.log(req.query);
+      // console.log("tok tok token", req.cookies.token);
+      console.log('user in the valid token', req.user);
+      // console.log('akam', req.query.uid);
+      // console.log('akam222', req.user.email);
+      // if(req.query.uid !== req.user.email){
+      //   return res.status(403).send({message: 'forbidden access'})
+      // }
+
       let query = {};
-      if (req.query?.uid) {
-        query = { user_id: req.query.uid }; // Use the correct field name 'applicant_email'
+      if (req.query?.email) {
+        query = { applicant_email: req.query.email }; // Use the correct field name 'applicant_email'
       }
       const cursor = appliedJobsCollection.find(query);
       const result = await cursor.toArray();
@@ -64,7 +136,24 @@ async function run() {
       res.send(result);
     })
 
- 
+    // app.get('/cartItems/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   console.log(id);
+    //   const query = { _id: new ObjectId(id) };
+    //   console.log(query);
+    //   const result = await appliedJobsCollection.findOne(query);
+    //   console.log(result);
+    //   res.send(result);
+    // });
+
+
+    // app.delete('/cartItems/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) }
+    //   const result = await appliedJobsCollection.deleteOne(query);
+    //   res.send(result);
+    // })
+
     // for Jobs
 
     app.get('/jobs', async (req, res) => {
