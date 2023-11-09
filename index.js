@@ -1,18 +1,25 @@
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser')
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
-
+// app.use(cors({
+//   origin: '*',
+// }));
+// app.use(cors());
 
 
 //middleware
-
-app.use(cors({ origin: '*' }));
-
+app.use(cors({
+  //local
+  // origin: ['http://localhost:5173'],
+  //live site
+  origin: ['https://a-11-62f53.web.app'],
+  credentials: true,
+}));
+app.use (express.json())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.n8c8sym.mongodb.net/?retryWrites=true&w=majority`;
@@ -32,7 +39,6 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
 
-
     const jobsCollection = client.db('BDJobsDB').collection('jobsCollection');
 
     const appliedJobsCollection = client.db('BDJobsDB').collection('appliedJobs')
@@ -41,23 +47,37 @@ async function run() {
 
     // for auth
 
+    //for live site
 
-    // app.post('/jwt', async (req, res) => {
-    //   const user = req.body;
+    app.post('/api/jwt', async (req, res) => {
+      const user = req.body
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+        })
+        .send({ success: true });
+    });
+
+    //for local
+
+    // app.post('/api/jwt', async (req, res) => {
+    //   const user = req.body
     //   console.log(user);
-    //   // const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-    //   res.send(user)
-    //     // .cookie('token', token, {
-    //     //   httpOnly: true,
-    //     //   secure: false,
-    //     // })
-    //     // .send({ success: true });
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
+    //   res
+    //     .cookie('token', token, {
+    //       httpOnly: true,
+    //       secure: false,
+    //     })
+    //     .send({ success: true });
     // });
-
 
     // for job application
 
- 
     app.get('/applied-jobs', async (req, res) => {
       // console.log(req.query);
       let query = {};
@@ -98,10 +118,11 @@ async function run() {
       res.send(results);
     });
 
-    app.post('/jobs', async (req, res) => {
+
+    app.post('/add-job-to-db', async (req, res) => {
       const newJob = req.body;
-      // console.log(newJob);
-      const result = await jobsCollection.insertOne(newJob);
+      console.log(newJob);
+      const result = await jobsCollection.insertOne(newJob);  
       res.send(result);
     })
 
