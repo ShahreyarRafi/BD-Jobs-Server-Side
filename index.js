@@ -81,8 +81,10 @@ async function run() {
     app.get('/applied-jobs', async (req, res) => {
       // console.log(req.query);
       let query = {};
-      if (req.query?.user_id) {
-        query = { uid: req.query.user_id }; // Use the correct field name 'applicant_email'
+      console.log(req.query.email);
+      if (req.query?.email) {
+
+        query = { applicant_email: req.query.email }; // Use the correct field name 'applicant_email'
       }
       const cursor = appliedJobsCollection.find(query);
       const result = await cursor.toArray();
